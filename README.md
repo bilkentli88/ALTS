@@ -1,8 +1,8 @@
 markdown
-Copy code
+
 # ALTS: Advanced Learning-based Time Series Classification
 
-![ALTS Logo](https://your-logo-link.com/logo.png) *(Optional)*
+
 
 ## Overview
 
