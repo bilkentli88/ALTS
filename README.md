@@ -61,7 +61,13 @@ ALTS is a PyTorch-based implementation of a time series classification method th
 
 ## Installation
 
-(Add installation instructions here)
+To get started with ALTS, clone the repository and install the necessary dependencies:
+
+bash
+Copy code
+git clone https://github.com/your-username/ALTS.git
+cd ALTS
+pip install -r requirements.txt
 
 ## Usage
 
