@@ -1,0 +1,2 @@
+dataset_name,bag_size,n_prototypes,stride_ratio,max_epoch,features_to_use_str,lambda_fused_lasso,lambda_prototypes,train_accuracy,test_accuracy
+Meat,140,96,0.01,1000,"min,max,mean,cos",1.66E-05,1.76E-05,1,1
