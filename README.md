@@ -68,10 +68,13 @@ git clone https://github.com/your-username/ALTS.git
 cd ALTS
 pip install -r requirements.txt
 
+## Usage
 
-Usage
-Preprocessing Data
+### Preprocessing Data
+
 Before training models, you need to preprocess your time series data. ALTS includes utilities for loading, normalizing, and augmenting datasets:
+
+```python
 from process_datasets import load_dataset
 
 # Load and preprocess the dataset
