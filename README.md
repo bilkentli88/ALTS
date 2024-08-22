@@ -67,6 +67,8 @@ To get started with ALTS, clone the repository and install the necessary depende
 git clone https://github.com/your-username/ALTS.git
 cd ALTS
 pip install -r requirements.txt
+
+
 ## Usage
 
 ### Preprocessing Data
