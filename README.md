@@ -30,7 +30,6 @@ git clone https://github.com/your-username/ALTS.git
 cd ALTS
 pip install -r requirements.txt
 
-
 ## Usage
 
 
