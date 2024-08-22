@@ -67,17 +67,3 @@ To get started with ALTS, clone the repository and install the necessary depende
 git clone https://github.com/your-username/ALTS.git
 cd ALTS
 pip install -r requirements.txt
-
-## Usage
-
-### Preprocessing Data
-
-Before training models, you need to preprocess your time series data. ALTS includes utilities for loading, normalizing, and augmenting datasets:
-
-```python
-from process_datasets import load_dataset
-
-# Load and preprocess the dataset
-train_features, train_labels, test_features, test_labels = load_dataset('YourDatasetName')
-
-
