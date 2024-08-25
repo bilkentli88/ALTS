@@ -43,9 +43,17 @@ if __name__ == "__main__":
             continue
 
         # Find the best hyperparameters and save results for the current dataset using the specified search type
-        optimize_shapelets.find_result_for_one(
+        model = optimize_shapelets.find_result_for_one(
             search_type=search_type,
             dataset_name=dataset_name,
             n_trials=100,  # Number of Optuna trials
             search_max_epoch=1000  # Maximum epochs for each Optuna trial
         )
+
+        # Save the trained model
+        if model is not None:
+            model_save_path = os.path.join('Results', f'{dataset_name}_best_model.pth')
+            optimize_shapelets.save_trained_model(model, model_save_path)
+            print(f"Trained model for {dataset_name} saved at {model_save_path}")
+        else:
+            print(f"Error: Model for {dataset_name} was not trained successfully.")
