@@ -50,10 +50,3 @@ if __name__ == "__main__":
             search_max_epoch=1000  # Maximum epochs for each Optuna trial
         )
 
-        # Save the trained model
-        if model is not None:
-            model_save_path = os.path.join('Results', f'{dataset_name}_best_model.pth')
-            optimize_shapelets.save_trained_model(model, model_save_path)
-            print(f"Trained model for {dataset_name} saved at {model_save_path}")
-        else:
-            print(f"Error: Model for {dataset_name} was not trained successfully.")
