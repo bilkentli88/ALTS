@@ -1,69 +1,84 @@
-# ALTS (Advanced Learning Time Series Shapelets): Shapelet-based Learning for Time Series Classification
+# ALTS (Advanced Learning of Time Series Shapelets)
 
-## Overview
+## 1. Introduction
 
-ALTS is a PyTorch-based implementation of a time series classification method that employs the shapelet paradigm. It utilizes a neural network to automatically discover discriminative shapelets (subsequences) from time series data, enabling accurate and interpretable classification.
+ALTS (Advanced Learning of Time Series Shapelets) is a time series classification method based on the shapelet paradigm, implemented using the PyTorch framework. The method is designed to identify and utilize representative subsequences (shapelets) within time series data to perform accurate and interpretable classification. ALTS leverages a neural network architecture that learns shapelets and uses various distance and similarity measures to distinguish between different classes.
 
-## Core Concepts
+## 2. Modules Overview
 
-- **Shapelets**: Subsequences within time series data that exhibit distinctive patterns associated with specific classes.
-- **Neural Network Architecture**: Fully connected neural network to learn shapelets and perform classification.
-- **Distance and Similarity Measures**: Calculates multiple features between input time series instances and learned shapelets.
-- **Regularization**: Incorporates L2 and Fused Lasso regularization.
-- **Hyperparameter Optimization**: Utilizes Optuna for automated tuning.
+ALTS is composed of eight modules, each responsible for different aspects of the model's functionality:
 
-## Modules
+* **`get_dataset_names`:** Handles dataset selection based on user input, enabling flexibility in choosing which datasets to process.
+* **`process_datasets`:** Loads, normalizes, augments, and converts time series data into bags (overlapping subsequences), preparing it for shapelet discovery.
+* **`optimize_shapelets`:** Conducts hyperparameter optimization using Optuna, evaluating model performance through cross-validation, and saving the best-performing models.
+* **`generate_shapelets`:** Defines the neural network architecture for learning shapelets, calculating distances and similarities, and performing classification.
+* **`regularize_shapelets`:** Extends the Skorch NeuralNetClassifier to include additional regularization terms specific to shapelet-based models.
+* **`get_train_results`:** Serves as the main execution script for retrieving datasets, performing hyperparameter optimization, and saving results.
+* **`get_test_results`:** Evaluates the best hyperparameters on the test set, ensuring that the model generalizes well to unseen data.
+* **`plot_shapelets`:** Visualizes the most discriminative shapelets and their best matching time series segments, providing insights into the model's decision-making process.
 
-1. **get_dataset_names**
-   - Retrieves dataset names based on command-line arguments.
-   - Key function: `get_database_list_from_arguments(sys_argv)`
+## 3. Model Architecture and Implementation
 
-2. **process_datasets**
-   - Handles loading, preprocessing, and augmenting time series datasets.
-   - Key functions: `load_dataset()`, `normalize()`, `augment_data()`, `convert_to_bags()`
+### 3.1 Shapelet Generation (`generate_shapelets`)
 
-3. **optimize_shapelets**
-   - Implements core ALTS functionality, including shapelet discovery, model training, evaluation, and hyperparameter optimization.
-   - Key functions: `get_skorch_regularized_classifier()`, `evaluate_model_performance()`, `find_best_hyper_params_optuna_search()`
+The core of ALTS lies in its ability to generate shapelets from time series data. The `ShapeletGeneration` class in the `generate_shapelets` module defines a neural network that learns shapelets and uses them for classification. This module handles:
 
-4. **generate_shapelets**
-   - Defines the `ShapeletGeneration` class, encapsulating the neural network architecture.
-   - Key methods: `pairwise_distances()`, `cosine_similarity()`, `get_output_from_prototypes()`, `forward()`
+* **Shapelet Initialization:** Shapelets are initialized as learnable parameters within the network, allowing them to be optimized during training.
+* **Distance and Similarity Measures:** The model calculates pairwise Euclidean distances and cosine similarities between input time series subsequences and the learned shapelets.
+* **Feature Extraction:** Based on user-specified features (min, max, mean, cos), the model extracts relevant features from the distance and similarity measures.
+* **Classification:** A fully connected neural network is used to classify time series instances based on the extracted features.
 
-5. **regularize_shapelets**
-   - Provides the `ShapeletRegularizedNet` class, extending Skorch's NeuralNetClassifier to incorporate regularization.
-   - Key method: `get_loss()`
+### 3.2 Regularization (`regularize_shapelets`)
 
-6. **get_train_results**
-   - Executes hyperparameter optimization using Optuna for a given list of datasets.
+To prevent overfitting and encourage smoothness in the learned shapelets, the `regularize_shapelets` module extends the Skorch NeuralNetClassifier to include:
 
-7. **get_test_results**
-   - Evaluates the best hyperparameters found during the search phase on the test set of each dataset.
+* **L2 Regularization on Shapelets:** Penalizes large values in the learned shapelets, encouraging simpler, more interpretable patterns.
+* **L2 Regularization on Linear Layers:** Applies regularization to the weights of the linear layers in the classifier.
+* **Fused Lasso Regularization:** Promotes smoothness in the shapelets by penalizing differences between consecutive elements within each shapelet.
 
-## Hyperparameters
+### 3.3 Hyperparameter Optimization (`optimize_shapelets`)
 
-- `bag_size`: Length of the candidate shapelet
-- `n_prototypes`: Number of shapelets created
-- `lambda_fused_lasso`: Regularization parameter for Fused Lasso Regularization
-- `lambda_prototypes`: Regularization parameter for L2 Regularization on shapelets
-- `lambda_linear_params`: Regularization parameter for L2 regularization on linear layer parameters (default: 0.20)
-- `LEARNING_RATE`: Learning rate for the optimizer (default: 0.0001)
-- `dropout_rate`: Dropout rate for regularization (default: 0.60)
-- `STRIDE_RATIO`: Ratio of stride to bag_size for creating bags (default 0.01)
-- `CV_COUNT`: Number of cross-validation folds (default 5)
-- `FEATURES_TO_USE_STR`: Comma-separated string specifying features to use (default "min,max,mean,cos")
+Hyperparameter optimization is performed using the Optuna framework, as defined in the `optimize_shapelets` module. This module:
 
-## Additional Considerations
+* **Searches for Optimal Hyperparameters:** Uses cross-validation to evaluate different hyperparameter combinations, such as `bag_size`, `n_prototypes`, `lambda_fused_lasso`, and `lambda_prototypes`.
+* **Saves the Best Model:** The best-performing model is saved for later evaluation and visualization.
 
-- Utilizes stratified k-fold cross-validation for model evaluation and hyperparameter tuning
-- Employs early stopping during training to prevent overfitting
-- Uses `set_seed` function to ensure reproducibility of results
+### 3.4 Data Processing (`process_datasets`)
+
+The `process_datasets` module prepares the data for shapelet generation by:
+
+* **Loading Datasets:** Loads training and testing data from files.
+* **Normalization:** Standardizes the time series data to have zero mean and unit variance.
+* **Data Augmentation:** Adds Gaussian noise to the training data, increasing the size and variability of the dataset.
+* **Bag Conversion:** Converts time series into bags of overlapping subsequences, which are used for shapelet learning.
+
+## 4. Training and Evaluation
+
+The `get_train_results` and `get_test_results` modules serve as the main scripts for training and evaluating the ALTS model:
+
+* **`get_train_results`:** This script orchestrates the training process, using the best hyperparameters identified during the optimization phase. It saves the trained model and logs the results.
+* **`get_test_results`:** After training, this script evaluates the model on the test set, ensuring that the selected hyperparameters generalize well to unseen data.
+
+## 5. Visualization of Shapelets (`plot_shapelets`)
+
+The `plot_shapelets` module provides an interface for visualizing the most discriminative shapelets learned by the model:
+
+* **Shapelet Extraction:** Extracts the shapelets from the trained model and identifies the most descriptive ones for each class.
+* **Time Series Matching:** Finds the best matching time series segments for each shapelet, highlighting the portions of the data that the shapelet corresponds to.
+* **Visualization:** Plots the shapelets and their corresponding time series segments, allowing users to interpret the model's classification decisions.
+
+## 6. Conclusion
+
+ALTS is a powerful tool for time series classification, combining the interpretability of shapelet-based methods with the flexibility of neural networks. Its modular design allows for easy customization and extension, making it suitable for a wide range of time series analysis tasks. The accompanying visualizations further enhance the model's interpretability, providing valuable insights into the patterns that drive classification decisions.
 
 ## Installation
 
-To get started with ALTS, clone the repository and install the necessary dependencies:
-
 ```bash
-git clone https://github.com/your-username/ALTS.git
+# Clone the repository
+git clone [https://github.com/bilkentli88/ALTS.git](https://github.com/your-username/ALTS.git)
+
+# Navigate to the project directory
 cd ALTS
+
+# Install the required dependencies
 pip install -r requirements.txt
