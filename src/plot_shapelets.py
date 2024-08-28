@@ -1,23 +1,3 @@
-"""
-This module is responsible for loading a trained shapelet model, extracting the most
-discriminative shapelets, and visualizing them alongside the best matching time series
-segments from the dataset.
-
-The module performs the following main tasks:
-
-Dependencies:
-- torch: For neural network operations and GPU acceleration
-- numpy: For numerical computations
-- matplotlib: For plotting and visualization
-- regularize_shapelets: Custom module containing the ShapeletRegularizedNet class
-- generate_shapelets: Custom module containing the ShapeletGeneration class
-- process_datasets: Custom module for loading datasets
-- set_seed: Custom module for setting random seeds for reproducibility
-
-Note: This script assumes that a pre-trained model and its corresponding dataset
-are available.
-"""
-
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -35,30 +15,34 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Path to the saved model parameters
 model_save_path = 'Results/BirdChicken_best_model.pth'
 
-# Load the model architecture parameters based on prior training setup
-bag_size = 87  # Length of the shapelet from BirdChicken results
-n_prototypes = 44  # Number of shapelets from BirdChicken results
-lambda_fused_lasso = 2.49E-08  # Fused Lasso regularization parameter
-lambda_prototypes = 1.03E-02  # L2 Regularization parameter
-n_classes = 2  # BirdChicken is a binary classification problem
-stride_ratio = 0.01  # Stride ratio used during model training
-features_to_use_str = "min,max,mean,cos"  # Features used in the model
+# Load the model and its architecture parameters
+checkpoint = torch.load(model_save_path, map_location=device)
 
-# Recreate the model architecture based on the training setup
+# Extract the hyperparameters from the saved model
+bag_size = checkpoint['bag_size']
+n_prototypes = checkpoint['n_prototypes']
+lambda_fused_lasso = checkpoint['lambda_fused_lasso']
+lambda_prototypes = checkpoint['lambda_prototypes']
+n_classes = checkpoint['n_classes']
+stride_ratio = checkpoint['stride_ratio']
+features_to_use_str = checkpoint['features_to_use_str']
+dropout_rate = checkpoint['dropout_rate']  # Dynamically load dropout_rate
+
+# Recreate the model architecture based on the loaded hyperparameters
 shapelet_model = ShapeletGeneration(
     n_prototypes=n_prototypes,
     bag_size=bag_size,
     n_classes=n_classes,
     stride_ratio=stride_ratio,
     features_to_use_str=features_to_use_str,
-    dropout_rate=0.60  # Dropout rate as used in the original module
+    dropout_rate=dropout_rate  # Use the loaded dropout_rate
 ).to(device)
 
 # Initialize the regularized network using the shapelet model
 regularized_net = ShapeletRegularizedNet(
     module=shapelet_model,
-    max_epochs=1000,  # Epochs used during training (not needed now, just for consistency)
-    lr=0.0001,  # Learning rate used during training
+    max_epochs=checkpoint['max_epochs'],  # Load the max epochs from the checkpoint
+    lr=checkpoint['learning_rate'],  # Load the learning rate from the checkpoint
     criterion=torch.nn.CrossEntropyLoss,  # Loss function used during training
     optimizer=torch.optim.Adam,  # Optimizer used during training
     iterator_train__shuffle=True,  # Shuffling training data (not needed now)
