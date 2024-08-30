@@ -1,0 +1,2 @@
+dataset_name,search_type,features_to_use,bag_size,n_classes,n_prototypes,stride_ratio,lambda_fused_lasso,lambda_prototypes,n_iter,cv_count,train_accuracy
+BirdChicken,OptunaSearch,"min,max,mean,cos",88,2,15,0.01,7.90E-08,6.95E-05,100,5,1

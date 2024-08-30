@@ -1,0 +1,2 @@
+dataset_name,bag_size,n_prototypes,stride_ratio,max_epoch,features_to_use_str,lambda_fused_lasso,lambda_prototypes,train_accuracy,test_accuracy
+BirdChicken,88,15,0.01,1000,"min,max,mean,cos",7.9e-08,6.95e-05,1.00000,0.97500
