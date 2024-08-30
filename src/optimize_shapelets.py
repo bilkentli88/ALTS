@@ -398,23 +398,26 @@ def get_filename_output_for_best_results(search_type, dataset_name, n_trials, se
 dispatcher = {"OptunaSearch": find_best_hyper_params_optuna_search}
 
 
-def find_result_for_one(search_type, dataset_name, n_trials, search_max_epoch):
+def find_result_for_one(search_type, dataset_name, n_trials=100, search_max_epoch=1000):
     """
-    Finds and saves the results for a single dataset using the specified search type.
+    Finds and saves the results for a single dataset using the specified search type
 
     Args:
-        search_type (str): The type of search used to find the best hyperparameters.
-        dataset_name (str): The name of the dataset.
-        n_trials (int, optional): The number of trials for Optuna optimization (default is 100).
-        search_max_epoch (int, optional): The maximum number of epochs used in the search phase (default is 1000).
+        search_type (str): The type of search used to find the best hyperparameters
+        dataset_name (str): The name of the dataset
+        n_trials (int, optional): The number of trials for Optuna optimization. Defaults to 100
+        search_max_epoch (int, optional): The maximum number of epochs used in the search phase Defaults to 1000.
 
     Returns:
-        None. The function saves the results to a CSV file and doesn't return any value.
+        dict: A dictionary containing the best hyperparameters found during the search.
     """
+
     output_filename = get_filename_output_for_search(search_type, dataset_name, n_trials, search_max_epoch)
 
     if os.path.isfile(output_filename):
-        print(f"dataset: {dataset_name} exists in {output_filename}")
+        print(f"Results for dataset: {dataset_name} exist in {output_filename}. Skipping...")
+        # Load the existing results if needed
+        result_dict = pd.read_csv(output_filename).iloc[0].to_dict()
     else:
         print(f"RUNNING for dataset: {dataset_name}")
         result_dict = dispatcher[search_type](dataset_name, n_trials=n_trials)
@@ -422,4 +425,8 @@ def find_result_for_one(search_type, dataset_name, n_trials, search_max_epoch):
 
         df = pd.DataFrame(result_dict, index=[0])
         df.to_csv(output_filename, index=False)
-        print(f"Saved dataset: {dataset_name} in {output_filename}")
+        print(f"Saved results for dataset: {dataset_name} in {output_filename}")
+
+    return result_dict
+
+
