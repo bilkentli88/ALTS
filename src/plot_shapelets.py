@@ -12,43 +12,34 @@ set_seed(2019)
 # Set device to GPU if available, else fallback to CPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Path to the saved model parameters
+# Paths to the saved model parameters and hyperparameters
 model_save_path = 'Results/BirdChicken_best_model.pth'
+hyperparams_save_path = 'Results/BirdChicken_hyperparams.pth'
 
-# Load the model and its architecture parameters
-checkpoint = torch.load(model_save_path, map_location=device)
-
-# Extract the hyperparameters from the saved model
-bag_size = checkpoint['bag_size']
-n_prototypes = checkpoint['n_prototypes']
-lambda_fused_lasso = checkpoint['lambda_fused_lasso']
-lambda_prototypes = checkpoint['lambda_prototypes']
-n_classes = checkpoint['n_classes']
-stride_ratio = checkpoint['stride_ratio']
-features_to_use_str = checkpoint['features_to_use_str']
-dropout_rate = checkpoint['dropout_rate']  # Dynamically load dropout_rate
+# Load the saved hyperparameters
+hyperparams = torch.load(hyperparams_save_path, map_location=device)
 
 # Recreate the model architecture based on the loaded hyperparameters
 shapelet_model = ShapeletGeneration(
-    n_prototypes=n_prototypes,
-    bag_size=bag_size,
-    n_classes=n_classes,
-    stride_ratio=stride_ratio,
-    features_to_use_str=features_to_use_str,
-    dropout_rate=dropout_rate  # Use the loaded dropout_rate
+    n_prototypes=hyperparams['n_prototypes'],
+    bag_size=hyperparams['bag_size'],
+    n_classes=hyperparams['n_classes'],
+    stride_ratio=hyperparams['stride_ratio'],
+    features_to_use_str=hyperparams['features_to_use_str'],
+    dropout_rate=hyperparams['dropout_rate']  # Use the loaded dropout_rate
 ).to(device)
 
 # Initialize the regularized network using the shapelet model
 regularized_net = ShapeletRegularizedNet(
     module=shapelet_model,
-    max_epochs=checkpoint['max_epochs'],  # Load the max epochs from the checkpoint
-    lr=checkpoint['learning_rate'],  # Load the learning rate from the checkpoint
+    max_epochs=hyperparams['max_epochs'],  # Load the max epochs from the hyperparams
+    lr=hyperparams['learning_rate'],  # Load the learning rate from the hyperparams
     criterion=torch.nn.CrossEntropyLoss,  # Loss function used during training
     optimizer=torch.optim.Adam,  # Optimizer used during training
     iterator_train__shuffle=True,  # Shuffling training data (not needed now)
     device=device,
-    lambda_prototypes=lambda_prototypes,
-    lambda_fused_lasso=lambda_fused_lasso
+    lambda_prototypes=hyperparams['lambda_prototypes'],
+    lambda_fused_lasso=hyperparams['lambda_fused_lasso']
 )
 
 # Load the saved model parameters
@@ -177,13 +168,13 @@ def find_and_plot_shapelets_and_matches(model, class_names, X_train, y_train):
         segment_range = segment_max - segment_min
         if segment_range != 0:
             # Apply scaling factor to make the shapelet more visible
-            scaling_factor = 0.8
+            scaling_factor = 0.5
             normalized_shapelet_scaled = scaled_shapelet * scaling_factor * segment_range / 2 + (
                     segment_min + segment_max) / 2
 
             timeseries_axes[i].plot(range(match_start, match_start + len(shapelet)), normalized_shapelet_scaled,
-                                    color='#702963', linestyle='-', linewidth=2,
-                                    label='Best Shapelet')  # Purple for overlay
+                                    color='#9457EB', linestyle='-', linewidth=1,
+                                    label='Best Shapelet')  # lavender for overlay
         timeseries_axes[i].set_title(f"Class {i + 1} ({class_names[i]}) Time Series",
                                      fontsize=12)
         timeseries_axes[i].set_xlabel('Time', fontsize=10)
@@ -196,9 +187,10 @@ def find_and_plot_shapelets_and_matches(model, class_names, X_train, y_train):
 
     # Add the title after adjusting the subplots
     fig.suptitle("Most Discriminative Shapelets of the BirdChicken Dataset", fontsize=12, color='black',
-                 fontweight='bold', y=0.98)
+                 fontweight='bold', y=0.97)
 
     plt.show()
+
 
 # Use the trained model to plot the shapelets and best matching instances
 find_and_plot_shapelets_and_matches(regularized_net, ['Bird', 'Chicken'], X_train, y_train)
