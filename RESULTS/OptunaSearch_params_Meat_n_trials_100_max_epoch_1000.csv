@@ -1,2 +1,0 @@
-dataset_name,search_type,features_to_use,bag_size,n_classes,n_prototypes,stride_ratio,lambda_fused_lasso,lambda_prototypes,n_iter,cv_count,train_accuracy
-Meat,OptunaSearch,"min,max,mean,cos",140,3,96,0.01,1.66E-05,1.76E-05,100,5,1
