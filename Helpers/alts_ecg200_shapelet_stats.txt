@@ -1,0 +1,2 @@
+class 1 (label Abnormal): shapelet_idx 24 auc=0.8471 cohens_d=-1.477
+class 0 (label Normal): shapelet_idx 9 auc=0.6953 cohens_d=0.804
